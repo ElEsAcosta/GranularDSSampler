@@ -10,11 +10,25 @@ jobs:
     container: devkitpro/devkitarm:latest
     steps:
       - uses: actions/checkout@v4
+
+      # plantilla oficial de devkitPro: ya trae las banderas correctas para libnds 2.0 (calico)
+      - uses: actions/checkout@v4
+        with:
+          repository: devkitPro/nds-examples
+          path: nds-examples
+
       - name: Instalar libnds + libfat
+        run: dkp-pacman -Sy --noconfirm --needed nds-dev
+
+      - name: Compilar con la plantilla oficial
         run: |
-          dkp-pacman -Sy --noconfirm --needed nds-dev
-      - name: Compilar
-        run: make
+          cp -r nds-examples/templates/arm9 proj
+          rm -f proj/source/*
+          cp granular.c proj/source/main.c
+          sed -i 's/-lnds9/-lfat -lnds9 -lm/' proj/Makefile
+          make -C proj
+          cp proj/*.nds granular.nds
+
       - uses: actions/upload-artifact@v4
         with:
           name: granular-nds
