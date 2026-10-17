@@ -1,0 +1,21 @@
+name: build-nds
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar libnds + libfat
+        run: |
+          dkp-pacman -Sy --noconfirm --needed nds-dev
+      - name: Compilar
+        run: make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: granular-nds
+          path: granular.nds
