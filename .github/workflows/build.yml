@@ -17,8 +17,18 @@ jobs:
           repository: devkitPro/nds-examples
           path: nds-examples
 
-      - name: Instalar libnds + libfat
-        run: dkp-pacman -Sy --noconfirm --needed nds-dev
+      - name: Instalar libnds + libfat (con reintentos)
+        run: |
+          if dkp-pacman -Q libnds libfat-nds >/dev/null 2>&1; then
+            echo "libnds y libfat ya estan instalados"
+          else
+            for i in 1 2 3 4 5; do
+              dkp-pacman -Sy --noconfirm --needed nds-dev && break
+              echo "fallo, reintento $i en $((i * 20)) s"
+              sleep $((i * 20))
+            done
+          fi
+          dkp-pacman -Q libnds libfat-nds || true
 
       - name: Compilar con la plantilla oficial
         run: |
