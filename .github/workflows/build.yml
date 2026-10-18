@@ -36,7 +36,17 @@ jobs:
           rm -f proj/source/*
           cp granular.c proj/source/main.c
           sed -i 's/-lnds9/-lfat -lnds9 -lm/' proj/Makefile
-          make -C proj
+          # nombre que muestra el menu del R4
+          sed -i 's/^#GAME_TITLE.*/GAME_TITLE := EFEES/; s/^#GAME_SUBTITLE1.*/GAME_SUBTITLE1 := Granular sampler/; s/^#GAME_SUBTITLE2.*/GAME_SUBTITLE2 := by Angel/' proj/Makefile
+          # icono: si el repo trae icon.png (32x32, max 16 colores, magenta = transparente) se usa;
+          # si algo falla con el icono, se compila igual con el icono por defecto
+          if [ -f icon.png ]; then
+            cp icon.png proj/icon.png
+            sed -i 's/^ICON .*/ICON     := icon.png/' proj/Makefile
+            make -C proj || { echo "fallo con el icono, reintento sin icono"; rm -rf proj/build proj/*.nds proj/*.elf proj/icon.png; sed -i 's/^ICON .*/ICON     :=/' proj/Makefile; make -C proj; }
+          else
+            make -C proj
+          fi
           cp proj/*.nds granular.nds
 
       - uses: actions/upload-artifact@v4
